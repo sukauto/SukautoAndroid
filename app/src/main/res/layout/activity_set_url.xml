@@ -1,25 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:app="http://schemas.android.com/apk/res-auto"
-            xmlns:tools="http://schemas.android.com/tools"
-            android:layout_width="match_parent" android:layout_height="match_parent">
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" xmlns:tools="http://schemas.android.com/tools">
 
     <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
-        <TextView
-                android:id="@+id/urlLabel"
-                android:layout_width="wrap_content"
+        <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="20dp"
-                android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium"/>
+                android:inputType="textPersonName"
+                android:text=""
+                android:hint="URL"
+                android:ems="10"
+                android:id="@+id/url"
+                tools:ignore="MissingConstraints"/>
         <com.google.android.material.button.MaterialButton
-                android:text="Reset"
+                android:text="Ok"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/resetBtn"
+                android:id="@+id/okBtn"
                 tools:ignore="MissingConstraints"/>
 
     </LinearLayout>

@@ -5,6 +5,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.os.Bundle
+import android.preference.PreferenceManager
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import android.text.Editable
@@ -29,6 +30,7 @@ class LoginActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_login)
 
+        val env = PreferenceManager.getDefaultSharedPreferences(this)
         val username = findViewById<EditText>(R.id.username)
         val password = findViewById<EditText>(R.id.password)
         val login = findViewById<Button>(R.id.login)
@@ -63,7 +65,9 @@ class LoginActivity : AppCompatActivity() {
             }
             setResult(Activity.RESULT_OK)
 
-            Log.i("STATUS","Login ok")
+            env.edit().putString("sukautoUser", username.text.toString()).apply()
+            env.edit().putString("sukautoPassword", password.text.toString()).apply()
+
             val newIntent = Intent(this, MainActivity::class.java)
             finish()
             startActivity(newIntent)
@@ -108,7 +112,7 @@ class LoginActivity : AppCompatActivity() {
         // TODO : initiate successful logged in experience
         Toast.makeText(
             applicationContext,
-            "$welcome $displayName",
+            "$welcome $displayName.",
             Toast.LENGTH_LONG
         ).show()
     }
