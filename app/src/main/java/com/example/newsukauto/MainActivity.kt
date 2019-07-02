@@ -4,21 +4,20 @@ import android.content.Intent
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.util.Log
-import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity;
+import com.beust.klaxon.Klaxon
 import com.example.newsukauto.ui.login.LoginActivity
-
-import kotlinx.coroutines.*
+import com.github.kittinunf.fuel.core.extensions.authentication
+import com.github.kittinunf.fuel.httpGet
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.activity_set_url.*
-import java.net.URL
+import com.github.kittinunf.result.Result
 
 class MainActivity : AppCompatActivity() {
+    var isLoad = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-//        setSupportActionBar(toolbar)
         val env = PreferenceManager.getDefaultSharedPreferences(this)
         val envUrl = env.getString("URL", "")
         val user = env.getString("sukautoUser", "")
@@ -32,6 +31,7 @@ class MainActivity : AppCompatActivity() {
         //empty auth
         if (user?.trim() == "" || password?.trim() == "") {
             val intent = Intent(this, LoginActivity::class.java)
+            isLoad = false
             finish()
             startActivity(intent)
         }
@@ -40,45 +40,50 @@ class MainActivity : AppCompatActivity() {
         //empty URL
         if (envUrl?.trim() == "") {
             val intent = Intent(this, setUrl::class.java)
+            isLoad = false
             finish()
             startActivity(intent)
         } else {
             urlLabel.text = envUrl?.trim()
         }
 
-
-        GlobalScope.launch { // launch a new coroutine in background and continue
-            delay(1000L) // non-blocking delay for 1 second (default time unit is ms)
-//            val res = URL(urlLabel.text.toString() + "/monitor/status").readText()
-            val res = URL("https://www.google.com/").readText()
-            println("dbg_start!") // print after delay
-            println(res)
-            println("dbg_end")
+        data class Service(var name:String, var status: String)
+        data class JsonResponse(var sevices: List<Service>)
+        fun fillLayOut(status: String) {
+            Log.i("DEBUGstatus::",status)
+            val res = Klaxon().parse<JsonResponse>(status)
+            if (res != null) {
+                for (rs in res.sevices) {
+                      Log.i("DEBUG::", rs.toString())
+                }
+            }
         }
-//
-//        suspend fun readUrl() = coroutineScope {
-//            val task1 = async { fetchResult(id = 42) }
-//            val task2 = async { fetchResult(id = 99) }
-//
-//            val results = awaitAll(task1, task2)
-//
-//            log(results)
-//        }
 
+        fun loadPage(url: String) {
+            val asyncRq = url
+                .httpGet()
+                .authentication()
+                .basic(user, password)
+                .responseString { request, response, result ->
+                    when (result) {
+                        is Result.Failure -> {
+                            val ex = result.getException()
+                            Log.e("LOAD_ERROR", ex.toString())
+                        }
+                        is Result.Success -> {
+                            val data = result.get()
+                            Log.i("data_info", data)
+//                            fillLayOut(data)
+                        }
+                    }
+                }
+            asyncRq.join()
+        }
 
-//        suspend fun readUrl(urlAdress: String) {
-////            val res =  async { URL(urlLabel.text.toString() + "/monitor/status").readText() }.await
-//            try {
-//                var res = ""
-//                res = async {  URL(urlAdress).readText() }.await
-//                Log.i("[RES]", res.toString())
-//            } catch (ex: Exception) {
-//
-//            }
-//
-//        }
-//
-//        readUrl(urlLabel.text.toString() + "/monitor/status")
+        if (isLoad) {
+            val workUrl = urlLabel.text.toString() + "/monitor/status"
+            loadPage(workUrl)
+        }
 
         resetBtn.setOnClickListener {
             env.edit().putString("URL", "").apply()
@@ -91,10 +96,6 @@ class MainActivity : AppCompatActivity() {
             startActivity(newIntent)
         }
 
-//        fab.setOnClickListener { view ->
-//            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                .setAction("Action", null).show()
-//        }
     }
 
 }
