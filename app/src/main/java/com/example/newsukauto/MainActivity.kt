@@ -7,10 +7,15 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity;
 import com.beust.klaxon.Klaxon
 import com.example.newsukauto.ui.login.LoginActivity
+import com.github.kittinunf.fuel.Fuel
 import com.github.kittinunf.fuel.core.extensions.authentication
+import com.github.kittinunf.fuel.coroutines.awaitString
 import com.github.kittinunf.fuel.httpGet
 import kotlinx.android.synthetic.main.activity_main.*
 import com.github.kittinunf.result.Result
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
+import java.lang.Exception
 
 class MainActivity : AppCompatActivity() {
     var isLoad = true
@@ -47,41 +52,37 @@ class MainActivity : AppCompatActivity() {
             urlLabel.text = envUrl?.trim()
         }
 
-        data class Service(var name:String, var status: String)
+        data class Service(var name: String, var status: String)
         data class JsonResponse(var sevices: List<Service>)
+
         fun fillLayOut(status: String) {
-            Log.i("DEBUGstatus::",status)
+            Log.i("DEBUGstatus::", status)
             val res = Klaxon().parse<JsonResponse>(status)
-            if (res != null) {
-                for (rs in res.sevices) {
-                      Log.i("DEBUG::", rs.toString())
-                }
-            }
+            Log.i("JSONin::", res?.sevices.toString())
+//            if (res != null) {
+//                for (rs in res.sevices) {
+//                    Log.i("DEBUG::", rs.toString())
+//                }
+//            }
         }
 
         fun loadPage(url: String) {
-            val asyncRq = url
-                .httpGet()
-                .authentication()
-                .basic(user, password)
-                .responseString { request, response, result ->
-                    when (result) {
-                        is Result.Failure -> {
-                            val ex = result.getException()
-                            Log.e("LOAD_ERROR", ex.toString())
-                        }
-                        is Result.Success -> {
-                            val data = result.get()
-                            Log.i("data_info", data)
-//                            fillLayOut(data)
-                        }
-                    }
+            runBlocking {
+                try{
+                    val res = Fuel.get(url).authentication().basic(user, password).awaitString()
+                    Log.i("Await", res)
+                    fillLayOut(res)
+                }catch (ex:Exception){
+                    Log.e("ERROR!", ex.toString())
                 }
-            asyncRq.join()
+
+            }
         }
+
 
         if (isLoad) {
             val workUrl = urlLabel.text.toString() + "/monitor/status"
+            Log.i("Start load", "")
             loadPage(workUrl)
         }
 
