@@ -64,7 +64,7 @@ class MainActivity : AppCompatActivity() {
 
         fun generateHollowBtn(ctx: Context, name: String): MaterialButton {
             val btn = MaterialButton(ctx)
-            val blue = getResources().getColor(R.color.blue)
+            val blue = getResources().getColor(R.color.white)
             val hollow = getResources().getColor(R.color.hollow)
             val violet = getResources().getColor(R.color.dark_pointer)
 
@@ -79,12 +79,12 @@ class MainActivity : AppCompatActivity() {
             return btn
         }
 
-        fun generateStatusText(status:String): TextView {
+        fun generateStatusText(status: String): TextView {
             val text = TextView(this)
             text.textSize = 15f
             text.text = status
             text.gravity = Gravity.CENTER
-            if(status == "running"){
+            if (status == "running") {
                 val green = getResources().getColor(R.color.green)
                 text.setTextColor(green)
             }
@@ -107,8 +107,11 @@ class MainActivity : AppCompatActivity() {
             line.addView(srv)
             line.addView(text)
 
-
             linearLayout.addView(line, params)
+
+            srv.setOnClickListener() {
+                Log.i("STAT", name)
+            }
         }
 
         fun fillLayOut(status: String) {
