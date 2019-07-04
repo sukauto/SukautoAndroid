@@ -4,16 +4,17 @@ import android.content.Intent
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.util.Log
+import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity;
 import com.beust.klaxon.Klaxon
 import com.example.newsukauto.ui.login.LoginActivity
 import com.github.kittinunf.fuel.Fuel
 import com.github.kittinunf.fuel.core.extensions.authentication
 import com.github.kittinunf.fuel.coroutines.awaitString
-import com.github.kittinunf.fuel.httpGet
 import kotlinx.android.synthetic.main.activity_main.*
-import com.github.kittinunf.result.Result
-import kotlinx.coroutines.async
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.lang.Exception
 
@@ -27,6 +28,11 @@ class MainActivity : AppCompatActivity() {
         val envUrl = env.getString("URL", "")
         val user = env.getString("sukautoUser", "")
         val password = env.getString("sukautoPassword", "")
+
+        data class Service(var name: String, var status: String)
+        data class JsonResponse(var services: List<Service>?)
+
+        val linearLayout = findViewById<LinearLayout>(R.id.root_ll)
 
         fun forceUpdateEnv() {
             env.edit().putInt("dummy", 0).apply()
@@ -52,38 +58,42 @@ class MainActivity : AppCompatActivity() {
             urlLabel.text = envUrl?.trim()
         }
 
-        data class Service(var name: String, var status: String)
-        data class JsonResponse(var sevices: List<Service>)
+        fun crtText(txt: String) {
+            val newLine = TextView(this)
+            newLine.textSize = 20f
+            newLine.text = txt
 
-        fun fillLayOut(status: String) {
-            Log.i("DEBUGstatus::", status)
-            val res = Klaxon().parse<JsonResponse>(status)
-            Log.i("JSONin::", res?.sevices.toString())
-//            if (res != null) {
-//                for (rs in res.sevices) {
-//                    Log.i("DEBUG::", rs.toString())
-//                }
-//            }
+            linearLayout.addView(newLine)
         }
 
-        fun loadPage(url: String) {
-            runBlocking {
-                try{
-                    val res = Fuel.get(url).authentication().basic(user, password).awaitString()
-                    Log.i("Await", res)
-                    fillLayOut(res)
-                }catch (ex:Exception){
-                    Log.e("ERROR!", ex.toString())
+        fun fillLayOut(status: String) {
+            Log.i("JSONstatus::", status)
+            val srvList = Klaxon().parse<JsonResponse>(status)?.services
+            if (srvList != null) {
+                for (service in srvList) {
+                    crtText(service.name + " == " + service.status)
                 }
+            }
+        }
 
+        suspend fun loadPage(url: String) {
+            try {
+                val res = Fuel.get(url).authentication().basic(user, password).awaitString()
+                Log.i("Await", "complete")
+                fillLayOut(res)
+            } catch (ex: Exception) {
+                Log.e("ERROR!", ex.toString())
             }
         }
 
 
         if (isLoad) {
-            val workUrl = urlLabel.text.toString() + "/monitor/status"
-            Log.i("Start load", "")
-            loadPage(workUrl)
+            runBlocking {
+                val workUrl = urlLabel.text.toString() + "/monitor/status"
+                Log.i("Start load", "")
+                val job = GlobalScope.launch { loadPage(workUrl) }
+                job.join()
+            }
         }
 
         resetBtn.setOnClickListener {
