@@ -11,4 +11,5 @@
     <string name="login_failed">"Login failed"</string>
     <string name="title_activity_main">MainActivity</string>
     <string name="bs">2dp</string>
+    <string name="host_title">host:</string>
 </resources>

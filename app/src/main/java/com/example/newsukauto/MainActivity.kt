@@ -2,10 +2,12 @@ package com.example.newsukauto
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.drawable.AnimationDrawable
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.util.Log
 import android.view.Gravity
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TableRow
 import android.widget.TextView
@@ -91,10 +93,18 @@ class MainActivity : AppCompatActivity() {
             return text
         }
 
+        fun generateIcon(): ImageView {
+            val img = ImageView(this)
+            val ico = getResources().getDrawable(R.drawable.ico)
+            img.setImageDrawable(ico)
+            return img
+        }
+
         fun crtLine(name: String, status: String) {
             val line = LinearLayout(this)
 
             val srv = generateHollowBtn(this, name)
+            val cfg = generateIcon()
             val text = generateStatusText(status)
 
             val width = LinearLayout.LayoutParams.MATCH_PARENT
@@ -103,9 +113,11 @@ class MainActivity : AppCompatActivity() {
 
             srv.setLayoutParams(TableRow.LayoutParams(width, height, 3f))
             text.setLayoutParams(TableRow.LayoutParams(width, height, 3f))
+            cfg.setLayoutParams(TableRow.LayoutParams(width, height, 4f))
 
             line.addView(srv)
             line.addView(text)
+            line.addView(cfg)
 
             linearLayout.addView(line, params)
 

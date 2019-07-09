@@ -3,26 +3,42 @@
             xmlns:app="http://schemas.android.com/apk/res-auto"
             xmlns:tools="http://schemas.android.com/tools"
             android:layout_width="match_parent" android:layout_height="match_parent">
-
     <LinearLayout
-            android:id="@+id/root_ll"
+            android:id="@+id/wrap_ll"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
-        <TextView
-                android:id="@+id/urlLabel"
-                android:layout_width="wrap_content"
+        <LinearLayout
+                android:id="@+id/root_ll"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="20dp"
-                android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium"/>
+                android:orientation="vertical">
+            <TextView
+                    android:id="@+id/host"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="20dp"
+                    android:text="@string/host_title"
+                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium"/>
+            <TextView
+                    android:id="@+id/urlLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="20dp"
+                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium"/>
+
+        </LinearLayout>
+
         <com.google.android.material.button.MaterialButton
                 android:text="Reset"
-                android:layout_gravity="center_horizontal"
+                android:layout_gravity="bottom|center_horizontal"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/resetBtn"
                 tools:ignore="MissingConstraints"/>
-
     </LinearLayout>
+
+
 </ScrollView>
