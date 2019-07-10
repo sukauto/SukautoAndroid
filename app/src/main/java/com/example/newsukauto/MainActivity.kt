@@ -2,7 +2,6 @@ package com.example.newsukauto
 
 import android.content.Context
 import android.content.Intent
-import android.graphics.drawable.AnimationDrawable
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.util.Log
@@ -26,6 +25,7 @@ import java.lang.Exception
 
 class MainActivity : AppCompatActivity() {
     var isLoad = true
+    var url = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,6 +62,7 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         } else {
             urlLabel.text = envUrl?.trim()
+            url = "${urlLabel?.text}/monitor"
         }
 
         fun generateHollowBtn(ctx: Context, name: String): MaterialButton {
@@ -121,8 +122,16 @@ class MainActivity : AppCompatActivity() {
 
             linearLayout.addView(line, params)
 
+            // ---------- actions ----------
             srv.setOnClickListener() {
-                Log.i("STAT", name)
+                val targetUrl="${url}/log/$name"
+                Log.i("RUN", targetUrl)
+                val newIntent = Intent(this, LogReader::class.java)
+                newIntent.putExtra("url",targetUrl)
+                newIntent.putExtra("password", password)
+                newIntent.putExtra("user", user)
+                finish()
+                startActivity(newIntent)
             }
         }
 
@@ -149,7 +158,7 @@ class MainActivity : AppCompatActivity() {
 
         if (isLoad) {
             runBlocking {
-                val workUrl = urlLabel.text.toString() + "/monitor/status"
+                val workUrl = url + "/status"
                 Log.i("Start load", "")
                 val job = GlobalScope.launch { loadPage(workUrl) }
                 job.join()
