@@ -6,10 +6,8 @@ import android.os.Bundle
 import android.preference.PreferenceManager
 import android.util.Log
 import android.view.Gravity
-import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.TableRow
-import android.widget.TextView
+import android.view.View
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity;
 import com.beust.klaxon.Klaxon
 import com.example.newsukauto.ui.login.LoginActivity
@@ -39,6 +37,12 @@ class MainActivity : AppCompatActivity() {
         data class JsonResponse(var services: List<Service>?)
 
         val linearLayout = findViewById<LinearLayout>(R.id.root_ll)
+
+        val imgSukauto = ImageView(this)
+        val imgId = getResources().getDrawable(R.drawable.ico)
+        imgSukauto.setImageDrawable(imgId)
+//        val lst = arrayOf(imgSukauto, "restart", "update", "stop")
+        val lst = arrayOf("...", "restart", "update", "stop")
 
         fun forceUpdateEnv() {
             env.edit().putInt("dummy", 0).apply()
@@ -94,11 +98,28 @@ class MainActivity : AppCompatActivity() {
             return text
         }
 
-        fun generateIcon(): ImageView {
-            val img = ImageView(this)
-            val ico = getResources().getDrawable(R.drawable.ico)
-            img.setImageDrawable(ico)
-            return img
+//        fun generateIcon(): ImageView {
+//            val img = ImageView(this)
+//            val ico = getResources().getDrawable(R.drawable.ico)
+//            img.setImageDrawable(ico)
+//            return img
+//        }
+
+        fun generateIcon(): Spinner {
+            val spinner = Spinner(this)
+            val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, lst)
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            spinner.adapter = adapter
+            return spinner
+        }
+
+        suspend fun sendRq(url: String) {
+            try {
+                val res = Fuel.get(url).authentication().basic(user, password).awaitString()
+                Log.i("Await", "complete")
+            } catch (ex: Exception) {
+                Log.e("ERROR!", ex.toString())
+            }
         }
 
         fun crtLine(name: String, status: String) {
@@ -124,15 +145,47 @@ class MainActivity : AppCompatActivity() {
 
             // ---------- actions ----------
             srv.setOnClickListener() {
-                val targetUrl="${url}/log/$name"
+                val targetUrl = "${url}/log/$name"
                 Log.i("RUN", targetUrl)
                 val newIntent = Intent(this, LogReader::class.java)
-                newIntent.putExtra("url",targetUrl)
+                newIntent.putExtra("url", targetUrl)
                 newIntent.putExtra("password", password)
                 newIntent.putExtra("user", user)
                 finish()
                 startActivity(newIntent)
             }
+
+            cfg.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onNothingSelected(parent: AdapterView<*>?) {
+
+                }
+
+                override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                    var workUrl = ""
+                    if (position == 1) {
+                        workUrl = "${url}/restart/$name"
+                    }
+
+                    if (position == 2) {
+                        workUrl = "${url}/update/$name"
+                    }
+
+                    if (position == 3) {
+                        workUrl = "${url}/stop/$name"
+                    }
+                    if (workUrl != "") {
+                        Log.i("item_select", workUrl)
+                        runBlocking {
+                            Log.i("Start load", "")
+                            val job = GlobalScope.launch { sendRq(workUrl) }
+                            job.join()
+                        }
+                        finish()
+                        startActivity(getIntent())
+                    }
+                }
+            }
+
         }
 
         fun fillLayOut(status: String) {
