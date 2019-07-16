@@ -3,10 +3,8 @@ package com.example.newsukauto
 import android.content.Intent
 import android.graphics.drawable.AnimationDrawable
 import android.os.Bundle
-import android.util.Log
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity;
-import java.lang.Thread.sleep
 
 class Opening : AppCompatActivity() {
     private lateinit var logoAnimation: AnimationDrawable
@@ -16,8 +14,9 @@ class Opening : AppCompatActivity() {
         setContentView(R.layout.opening)
 
         val logoAnimate = findViewById<ImageView>(R.id.img).apply {
-            setBackgroundResource(R.drawable.animation)
-            logoAnimation = background as AnimationDrawable
+            val frame=getResources().getDrawable(R.drawable.animation)
+            setImageDrawable(frame)
+            logoAnimation = drawable as AnimationDrawable
         }
 
         logoAnimate.setOnClickListener({
